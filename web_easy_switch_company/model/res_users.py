@@ -20,7 +20,7 @@
 #
 ##############################################################################
 
-from openerp.osv.orm import Model
+from openerp.models import Model
 
 
 class res_users(Model):
