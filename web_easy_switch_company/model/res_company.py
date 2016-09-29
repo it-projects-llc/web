@@ -20,8 +20,8 @@
 #
 ##############################################################################
 
-from openerp.osv import fields
-from openerp.osv.orm import Model
+from openerp import fields
+from openerp.models import Model
 from openerp.tools import image_resize_image
 
 
@@ -44,14 +44,14 @@ class res_company(Model):
         return result
 
     # Columns Section
-    _columns = {
-        'logo_topbar': fields.function(
-            _get_logo_topbar,
-            string="Logo displayed in the switch company menu",
-            type="binary", store={
-                'res.company': (lambda s, c, u, i, x: i, ['partner_id'], 10),
-                'res.partner': (_switch_company_get_companies_from_partner,
-                                ['image'], 10),
-            }
-        ),
-    }
+    #_columns = {
+    #    'logo_topbar': fields.function(
+    #        _get_logo_topbar,
+    #        string="Logo displayed in the switch company menu",
+    #        type="binary", store={
+    #            'res.company': (lambda s, c, u, i, x: i, ['partner_id'], 10),
+    #            'res.partner': (_switch_company_get_companies_from_partner,
+    #                            ['image'], 10),
+    #        }
+    #    ),
+    #}
