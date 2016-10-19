@@ -26,6 +26,7 @@ addon | version | summary
 [web_hide_db_manager_link](web_hide_db_manager_link/) | 9.0.1.0.0 | Hide link to database manager in login screen
 [web_notify](web_notify/) | 9.0.1.0.0 | Send notification messages to user
 [web_readonly_bypass](web_readonly_bypass/) | 9.0.1.0.0 | Allow to save onchange modifications to readonly fields
+[web_responsive](web_responsive/) | 9.0.1.0.0 | It provides a mobile compliant interface for Odoo Community web
 [web_searchbar_full_width](web_searchbar_full_width/) | 9.0.1.0.0 | Show search bar in full screen width
 [web_send_message_popup](web_send_message_popup/) | 9.0.1.0.0 | Web Send Message as Popup
 [web_sheet_full_width](web_sheet_full_width/) | 9.0.1.0.0 | Use the whole available screen width when displaying sheets
@@ -34,8 +35,10 @@ addon | version | summary
 [web_widget_color](web_widget_color/) | 9.0.1.0.0 | Web Widget Color
 [web_widget_float_formula](web_widget_float_formula/) | 9.0.1.0.0 | Allow use of simple formulas in float fields
 [web_widget_image_download](web_widget_image_download/) | 9.0.1.0.0 | Allows to download any image from its widget
+[web_widget_image_webcam](web_widget_image_webcam/) | 9.0.1.0.0 | Allows to take image with WebCam
 [web_widget_many2many_tags_multi_selection](web_widget_many2many_tags_multi_selection/) | 9.0.1.1.0 | Tags multiple selection
 [web_widget_timepicker](web_widget_timepicker/) | 9.0.1.0.0 | Web Timepicker Widget
+[web_widget_x2many_2d_matrix](web_widget_x2many_2d_matrix/) | 9.0.1.0.0 | Show list fields as a matrix
 
 Unported addons
 ---------------
@@ -47,7 +50,6 @@ addon | version | summary
 [web_action_conditionable](web_action_conditionable/) | 8.0.0.1.0 (unported) | web_action_conditionable
 [web_advanced_search_x2x](web_advanced_search_x2x/) | 8.0.1.0.0 (unported) | Use a search widget in advanced search for x2x fields
 [web_ckeditor4](web_ckeditor4/) | 8.0.1.0.0 (unported) | Provides a widget for editing HTML fields using CKEditor 4.x
-[web_color](web_color/) | 1.0 (unported) | Web Color
 [web_confirm_window_close](web_confirm_window_close/) | 7.0.1 (unported) | Check for unsaved data when closing browser window
 [web_context_in_colors](web_context_in_colors/) | 8.0.1.1.0 (unported) | Use the context in a tree view's colors and fonts attribute
 [web_dashboard_open_action](web_dashboard_open_action/) | 8.0.1.0.0 (unported) | Adds a button to open a dashboard in full mode
@@ -73,6 +75,5 @@ addon | version | summary
 [web_tree_many2one_clickable](web_tree_many2one_clickable/) | 8.0.1.0.0 (unported) | Clickable many2one fields for tree views
 [web_widget_datepicker_options](web_widget_datepicker_options/) | 8.0.1.0.0 (unported) | web_widget_datepicker_options
 [web_widget_text_markdown](web_widget_text_markdown/) | 8.0.1.0.0 (unported) | web_widget_text_markdown
-[web_widget_x2many_2d_matrix](web_widget_x2many_2d_matrix/) | 8.0.1.0.0 (unported) | Show list fields as a matrix
 
 [//]: # (end addons)
