@@ -27,11 +27,14 @@ Web Notify
 
 Send instant notification messages to the user in live.
 
-This technical module allows you to send instant notification messages from the server to the user in live. 
+This technical module allows you to send instant notification messages from the server to the user in live.
 Two kinds of notification are supported.
 
-* Warning: Displayed in a red flying popup div
-* Information: Displayed in a light yellow flying popup div
+* Success: Displayed in a `success` theme color flying popup div
+* Danger: Displayed in a `danger` theme color flying popup div
+* Warning: Displayed in a `warning` theme color flying popup div
+* Information: Displayed in a `info` theme color flying popup div
+* Default: Displayed in a `default` theme color flying popup div
 
 **Table of contents**
 
@@ -50,23 +53,41 @@ Usage
 To send a notification to the user you just need to call one of the new methods defined on res.users:
 
 .. code-block:: python
-  
-   self.env.user.notify_info(message='My information message')
 
-or 
+   self.env.user.notify_success(message='My success message')
+
+or
 
 .. code-block:: python
-  
-   self.env.user.notify_warning(message='My marning message')
 
-.. figure:: static/description/notifications_screenshot.png
+   self.env.user.notify_danger(message='My danger message')
+
+or
+
+.. code-block:: python
+
+   self.env.user.notify_warning(message='My warning message')
+
+or
+
+.. code-block:: python
+
+   self.env.user.notify_info(message='My information message')
+
+or
+
+.. code-block:: python
+
+   self.env.user.notify_default(message='My default message')
+
+.. figure:: https://raw.githubusercontent.com/OCA/web/12.0/web_notify/static/description/notifications_screenshot.png
    :scale: 80 %
    :alt: Sample notifications
 
 You can test the behaviour of the notifications by installing this module in a demo database.
 Access the users form through Settings -> Users & Companies. You'll see a tab called "Test web notify", here you'll find two buttons that'll allow you test the module.
 
-.. figure:: static/description/test_notifications_demo.png
+.. figure:: https://raw.githubusercontent.com/OCA/web/12.0/web_notify/static/description/test_notifications_demo.png
    :scale: 80 %
    :alt: Sample notifications
 
@@ -95,6 +116,7 @@ Contributors
 * Laurent Mignon <laurent.mignon@acsone.eu>
 * Serpent Consulting Services Pvt. Ltd.<jay.vora@serpentcs.com>
 * Aitor Bouzas <aitor.bouzas@adaptivecity.com>
+* Shepilov Vladislav <shepilov.v@protonmail.com>
 
 Maintainers
 ~~~~~~~~~~~
