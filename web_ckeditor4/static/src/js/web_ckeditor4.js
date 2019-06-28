@@ -20,148 +20,93 @@
 #
 ############################################################################*/
 
-openerp.web_ckeditor4 = function(instance)
-{
-    var ckeditor_addFunction_org = CKEDITOR.tools.addFunction;
-    //this is a quite complicated way to kind of monkey patch the private
-    //method onDomReady of ckeditor's plugin wysiwigarea, which causes problems
-    //when the editor is about to be destroyed but because of OpenERP's
-    //architecture updated one last time with its current value
-    CKEDITOR.tools.addFunction = function(fn, scope)
-    {
-        if(scope && scope._ && scope._.attrChanges && scope._.detach)
-        {
-            var scope_reference = scope;
-            return ckeditor_addFunction_org(function()
-                    {
-                        var self = this,
-                            self_arguments=arguments;
-                        setTimeout(function()
-                        {
-                            if(self.editor)
-                            {
-                                fn.apply(self, self_arguments);
-                            }
-                        }, 0);
-                    }, scope);
-        }
-        return ckeditor_addFunction_org(fn, scope);
-    };
+odoo.define('web_ckeditor4', function(require){
+    "use strict";
+    var core = require('web.core');
+    var session = require('web.session');
+    var formats = require('web.formats');
+    var ckconfig = require('web_ckeditor4.config');
 
-    CKEDITOR.on('dialogDefinition', function(e)
-        {
-            _.each(e.data.definition.contents, function(element)
-            {
-                if(!element || element.filebrowser!='uploadButton')
-                {
-                    return
-                }
-                _.each(element.elements, function(element)
-                {
-                    if(!element.onClick || element.type!='fileButton')
-                    {
-                        return
-                    }
-                    var onClick_org = element.onClick;
-                    element.onClick = function(e1)
-                    {
-                        onClick_org.apply(this, arguments);
-                        _.each(jQuery('#'+this.domId).closest('table')
-                            .find('iframe').contents().find(':file')
-                            .get(0).files,
-                            function(file)
-                            {
-                                var reader = new FileReader();
-                                reader.onload = function(load_event)
-                                {
-                                    CKEDITOR.tools.callFunction(
-                                        e.editor._.filebrowserFn,
-                                        load_event.target.result,
-                                        '');
-                                }
-                                reader.readAsDataURL(file);
-                            });
-                        return false;
-                    }
-                });
-            });
-        });
-
-    instance.web.form.widgets.add('text_ckeditor4',
-            'instance.web_ckeditor4.FieldCKEditor4');
-    instance.web.form.widgets.add('text_ckeditor4_raw',
-            'instance.web_ckeditor4.FieldCKEditor4Raw');
-    instance.web.form.widgets.add('text_html',
-            'instance.web_ckeditor4.FieldCKEditor4');
-    instance.web.form.widgets.add('html',
-            'instance.web_ckeditor4.FieldCKEditor4');
-
-    function filter_html(value, ckeditor_filter, ckeditor_writer)
-    {
-        var fragment = CKEDITOR.htmlParser.fragment.fromHtml(value);
-        ckeditor_filter.applyTo(fragment);
-        ckeditor_writer.reset();
-        fragment.writeHtml(ckeditor_writer);
-        return ckeditor_writer.getHtml();
-    };
-
-    default_ckeditor_filter = new CKEDITOR.filter(
-            {
-                '*':
-                {
-                    attributes: 'href,src,style,alt,width,height,dir',
-                    styles: '*',
-                    classes: '*',
-                },
-                'html head title meta style body p div span a h1 h2 h3 h4 h5 img br hr table tr th td ul ol li dd dt strong pre b i': true,
-            });
-    default_ckeditor_writer = new CKEDITOR.htmlParser.basicWriter();
-
-    instance.web_ckeditor4.FieldCKEditor4 = instance.web.form.FieldText.extend({
-        ckeditor_config: {
-            removePlugins: 'iframe,flash,forms,smiley,pagebreak,stylescombo',
-            filebrowserImageUploadUrl: 'dummy',
-            extraPlugins: 'filebrowser',
-            // this is '#39' per default which screws up single quoted text in ${}
-            entities_additional: '',
+    var FieldCKEditor4 = core.form_widget_registry.get('text').extend({
+        ckeditor_config: function () {
+            return {
+                removePlugins: this._getRemovePlugins(),
+                removeButtons: this._getRemoveButtons(),
+                filebrowserImageUploadUrl: 'dummy',
+                extraPlugins: 'filebrowser',
+                // this is '#39' per default which screws up single quoted text in ${}
+                entities_additional: ''
+            };
         },
-        ckeditor_filter: default_ckeditor_filter,
-        ckeditor_writer: default_ckeditor_writer,
+        ckeditor_filter: ckconfig.default_ckeditor_filter,
+        ckeditor_writer: ckconfig.default_ckeditor_writer,
+        _getRemovePlugins: function () {
+            return 'iframe,flash,forms,smiley,pagebreak,stylescombo';
+        },
+        _getRemoveButtons: function () {
+            return '';
+        },
+        init: function () {
+            this._super.apply(this, arguments);
+            this.editor_lang = session.user_context.lang.split('_')[0];
+            this.view.on("load_record", this, this._on_load_record);
+        },
         start: function()
         {
             this._super.apply(this, arguments);
-    
-            CKEDITOR.lang.load(instance.session.user_context.lang.split('_')[0], 'en', function() {});
+            CKEDITOR.lang.load(this.editor_lang, 'en', function() {});
+        },
+        _on_load_record: function() {
+            /* Fix widget not re-initialized on form discard.
+
+            When you hit "cancel" button or when you navigate away
+            from the form, for instance by clicking on the breadcrumb
+            or on  "edit translations", we have to remove the CKEditor widget.
+
+            BUT then if you hit "create" Odoo's form machinery is not initializing
+            the widget anymore (which really sounds inconsistent).
+            If the widget is not initialized again it means that if CKEditor
+            got destroyed there's no way to re-init again.
+
+            Here we make sure that on create (no id on datarecord)
+            if the editor is not initialized yet we force it.
+            */
+            if (!this.view.datarecord.id && !this.editor) {
+                this.initialize_content();
+            }
         },
         initialize_content: function()
         {
             var self = this;
             this._super.apply(this, arguments);
-            if(!this.$textarea)
+            if(!this.$el)
             {
                 return;
-            }
-            this.editor = CKEDITOR.replace(this.$textarea.get(0),
-                _.extend(
-                    {
-                        language: instance.session.user_context.lang.split('_')[0],
-                        on:
+            } else if (!this.get('effective_readonly') && !this.editor) {
+                this.editor = CKEDITOR.replace(this.$el.get(0),
+                    _.extend(
                         {
-                            'change': function()
+                            language: this.editor_lang,
+                            on:
                             {
-                                self.store_dom_value();
+                                'change': function()
+                                {
+                                    self.store_dom_value();
+                                },
                             },
                         },
-                    }, 
-                    this.ckeditor_config));
+                        self.ckeditor_config()
+                    )
+                );
+            }
         },
         store_dom_value: function()
         {
-            this.internal_set_value(this.editor ? this.editor.getData() : instance.web.parse_value(this.get('value'), this));
+            this.internal_set_value(this.editor ? this.editor.getData() : formats.parse_value(this.get('value'), this));
         },
         filter_html: function(value)
         {
-            return filter_html(value, this.ckeditor_filter, this.ckeditor_writer);
+            return ckconfig.filter_html(value, this.ckeditor_filter, this.ckeditor_writer);
         },
         render_value: function()
         {
@@ -190,6 +135,9 @@ openerp.web_ckeditor4 = function(instance)
                 }
             }
         },
+        destroy_content: function () {
+            this._cleanup_editor();
+        },
         undelegateEvents: function()
         {
             this._cleanup_editor();
@@ -197,8 +145,10 @@ openerp.web_ckeditor4 = function(instance)
         },
         _cleanup_editor: function()
         {
-            if(this.editor)
+            if(this.editor && this.editor.status == 'ready')
             {
+                CKEDITOR.remove(this.editor.name);
+                $('#cke_' + this.editor.name).remove();
                 this.editor.removeAllListeners();
                 this.editor.destroy();
                 this.editor = null;
@@ -206,19 +156,26 @@ openerp.web_ckeditor4 = function(instance)
         },
         destroy: function()
         {
-            this.destroy_content();
-            this._super();
-        },
-        destroy_content: function()
-        {
+            this.view.off("load_record", this, this._on_load_record);
             this._cleanup_editor();
+            this._super();
         }
     });
-    instance.web_ckeditor4.FieldCKEditor4Raw = instance.web_ckeditor4.FieldCKEditor4.extend({
+
+    var FieldCKEditor4Raw = FieldCKEditor4.extend({
         filter_html: function(value)
         {
             return value;
         }
     });
-}
 
+    core.form_widget_registry.add('text_ckeditor4', FieldCKEditor4);
+    core.form_widget_registry.add('text_ckeditor4_raw', FieldCKEditor4Raw);
+    core.form_widget_registry.add('text_html', FieldCKEditor4);
+    core.form_widget_registry.add('html', FieldCKEditor4);
+
+    return {
+        'FieldCKEditor4': FieldCKEditor4,
+        'FieldCKEditor4Raw': FieldCKEditor4Raw
+    }
+});
